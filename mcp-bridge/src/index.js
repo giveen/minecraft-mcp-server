@@ -138,6 +138,10 @@ process.stdin.on('data', (chunk) => {
           const ts = new Date().toISOString();
           const preview = trimmed.replace(/\s+/g, ' ').slice(0, 120);
           process.stderr.write(`${ts} [bridge] [warn] Non-JSON input received; likely drift. Ignoring. Preview: ${preview}\n`);
+          // Brief echo to parent (client) so users see why nothing happened.
+          // Keep this behind --anything-llm to avoid altering default behavior.
+          const hint = `${ts} [bridge] [hint] Malformed response ignored. Please reply with a single JSON object {\"name\": string, \"arguments\": object}.`;
+          try { process.stdout.write(hint + "\n"); } catch (e) { /* ignore */ }
         }
       } catch (e) {
         // ignore diagnostics errors
