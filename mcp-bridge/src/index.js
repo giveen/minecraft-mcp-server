@@ -12,6 +12,8 @@ const argv = yargs(hideBin(process.argv))
   .parseSync();
 
 let serverArgs = argv['server-args'].split(',').filter(Boolean);
+// Enable diagnostics when the server is started with --anything-llm
+const warnOnNonJson = serverArgs.includes('--anything-llm');
 
 // If requested, make the username unique by appending a safe suffix using an underscore
 if (argv['unique-username']) {
@@ -81,6 +83,7 @@ process.stdin.on('data', (chunk) => {
 
     // Keep extracting and forwarding any complete JSON objects found.
     let progress = true;
+    let forwarded = false;
     while (progress) {
       progress = false;
       const found = extractFirstJsonOrDone(stdinBuffer);
@@ -113,6 +116,7 @@ process.stdin.on('data', (chunk) => {
           // if parse fails, fall back to sending the original raw string
         }
         try { child.stdin.write(raw + '\n'); } catch (e) {}
+        forwarded = true;
         // Do not emit any DONE/done/success markers here — remove bridge-side
         // terminators to match the new protocol (model must not rely on DONE).
         // Remove what we consumed from the buffer
@@ -122,6 +126,23 @@ process.stdin.on('data', (chunk) => {
     }
     // Prevent the buffer from growing indefinitely
     if (stdinBuffer.length > 20000) stdinBuffer = stdinBuffer.slice(-20000);
+
+    // If diagnostics are enabled and nothing was forwarded from this chunk,
+    // emit a single-line warning when the input appears to be non-JSON prose.
+    if (warnOnNonJson && !forwarded) {
+      try {
+        const text = typeof chunk === 'string' ? chunk : chunk.toString('utf8');
+        const trimmed = text.trim();
+        const looksLikeProse = trimmed && !/[{]/.test(trimmed) && !/\bDONE\b/i.test(trimmed);
+        if (looksLikeProse) {
+          const ts = new Date().toISOString();
+          const preview = trimmed.replace(/\s+/g, ' ').slice(0, 120);
+          process.stderr.write(`${ts} [bridge] [warn] Non-JSON input received; likely drift. Ignoring. Preview: ${preview}\n`);
+        }
+      } catch (e) {
+        // ignore diagnostics errors
+      }
+    }
   } catch (e) {
     // logging only — don't crash
     console.error('Error parsing stdin buffer:', e);
