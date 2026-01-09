@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "minecraft-via-bridge": {
+      "command": "bash",
+      "args": [
+        "-lc",
+        "cd $HOME/Documents/minecraft-mcp-server && exec node mcp-bridge/src/index.js --server-cmd node --server-args \"dist/main.js,--host,localhost,--port,26565,--username,AnythingBot,--anything-llm,--log-file,$HOME/Documents/minecraft-mcp-server/server.log\""
+      ]
+    }
+  }
+}

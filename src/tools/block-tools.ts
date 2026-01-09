@@ -75,6 +75,8 @@ export function registerBlockTools(factory: ToolFactory, getBot: () => mineflaye
     }
   );
 
+  
+
   factory.registerTool(
     "dig-block",
     "Dig a block at the specified position",

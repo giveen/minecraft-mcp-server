@@ -1,0 +1,11 @@
+{
+  "name": "mcp-bridge",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "mcp-bridge": "src/index.js"
+  },
+  "dependencies": {
+    "yargs": "^18.0.0"
+  }
+}

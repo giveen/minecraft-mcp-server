@@ -26,6 +26,8 @@ export class BotConnection {
   private isReconnecting = false;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly reconnectDelayMs: number;
+  private shuttingDown = false;
+  private duplicateBackoffUntil = 0;
 
   constructor(config: BotConfig, callbacks: ConnectionCallbacks, reconnectDelayMs = 2000) {
     this.config = config;
@@ -83,8 +85,14 @@ export class BotConnection {
     });
 
     bot.on('kicked', (reason) => {
-      this.callbacks.onLog('error', `Bot was kicked from server: ${this.formatError(reason)}`);
+      const reasonStr = this.formatError(reason);
+      this.callbacks.onLog('error', `Bot was kicked from server: ${reasonStr}`);
       this.state = 'disconnected';
+      // If the server reported a duplicate login, delay reconnect to avoid immediate collision.
+      if (String(reasonStr).includes('duplicate_login') || String(reasonStr).includes('duplicate-login')) {
+        this.callbacks.onLog('info', 'Duplicate login detected: delaying reconnect by 10s');
+        this.duplicateBackoffUntil = Date.now() + 10000;
+      }
       bot.quit();
     });
 
@@ -119,6 +127,10 @@ export class BotConnection {
           this.callbacks.onLog('warn', `Error cleaning up bot on end event: ${this.formatError(err)}`);
         }
       }
+        // Attempt reconnect if this was not an intentional shutdown/cleanup
+        if (!this.shuttingDown) {
+          this.attemptReconnect();
+        }
     });
   }
 
@@ -126,10 +138,13 @@ export class BotConnection {
     if (this.isReconnecting || this.state === 'connecting') {
       return;
     }
-
     this.isReconnecting = true;
+    // compute effective delay: respect any duplicate-login backoff
+    const now = Date.now();
+    const backoffMs = Math.max(0, this.duplicateBackoffUntil - now);
+    const delay = Math.max(this.reconnectDelayMs, backoffMs);
     this.state = 'connecting';
-    this.callbacks.onLog('info', `Attempting to reconnect to Minecraft server in ${this.reconnectDelayMs}ms...`);
+    this.callbacks.onLog('info', `Attempting to reconnect to Minecraft server in ${delay}ms...`);
 
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
@@ -146,9 +161,11 @@ export class BotConnection {
         }
       }
 
+      // clear any backoff once we're actively reconnecting
+      this.duplicateBackoffUntil = 0;
       this.callbacks.onLog('info', 'Creating new bot instance...');
       this.connect();
-    }, this.reconnectDelayMs);
+    }, delay);
   }
 
   async checkConnectionAndReconnect(): Promise<{ connected: boolean; message?: string }> {
@@ -190,6 +207,7 @@ export class BotConnection {
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
     }
+    this.shuttingDown = true;
     if (this.bot) {
       try {
         this.bot.quit('Server shutting down');

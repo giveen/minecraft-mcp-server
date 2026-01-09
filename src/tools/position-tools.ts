@@ -4,6 +4,7 @@ import pathfinderPkg from 'mineflayer-pathfinder';
 const { goals } = pathfinderPkg;
 import { Vec3 } from 'vec3';
 import { ToolFactory } from '../tool-factory.js';
+import { log } from '../logger.js';
 
 type Direction = 'forward' | 'back' | 'left' | 'right';
 
@@ -62,9 +63,18 @@ export function registerPositionTools(factory: ToolFactory, getBot: () => minefl
     {},
     async () => {
       const bot = getBot();
-      bot.setControlState('jump', true);
-      setTimeout(() => bot.setControlState('jump', false), 250);
-      return factory.createResponse("Successfully jumped");
+      try {
+        log('info', 'Jump: toggling control state');
+        bot.setControlState('jump', true);
+        await new Promise(resolve => setTimeout(resolve, 250));
+        bot.setControlState('jump', false);
+        log('info', 'Jump: completed');
+        return factory.createResponse("Successfully jumped");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        log('error', `Jump failed: ${msg}`);
+        return factory.createErrorResponse(`Jump failed: ${msg}`);
+      }
     }
   );
 

@@ -17,6 +17,8 @@ export function registerChatTools(factory: ToolFactory, getBot: () => mineflayer
     }
   );
 
+
+
   factory.registerTool(
     "read-chat",
     "Get recent chat messages from players",

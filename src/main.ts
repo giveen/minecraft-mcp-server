@@ -3,7 +3,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { setupStdioFiltering } from './stdio-filter.js';
-import { log } from './logger.js';
+import { log, configureLogger } from './logger.js';
 import { parseConfig } from './config.js';
 import { BotConnection } from './bot-connection.js';
 import { ToolFactory } from './tool-factory.js';
@@ -16,8 +16,6 @@ import { registerChatTools } from './tools/chat-tools.js';
 import { registerFlightTools } from './tools/flight-tools.js';
 import { registerGameStateTools } from './tools/gamestate-tools.js';
 
-setupStdioFiltering();
-
 process.on('unhandledRejection', (reason) => {
   log('error', `Unhandled rejection: ${reason}`);
 });
@@ -28,6 +26,14 @@ process.on('uncaughtException', (error) => {
 
 async function main() {
   const config = parseConfig();
+  // Only enable stdio filtering when running under AnythingLLM bridge
+  if (config.anythingLLM) {
+    setupStdioFiltering();
+  }
+  if (config.logFile) {
+    configureLogger({ logFile: config.logFile });
+    log('info', `File logging enabled: ${config.logFile}`);
+  }
   const messageStore = new MessageStore();
 
   const connection = new BotConnection(
