@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { BotConnection } from './bot-connection.js';
+import { log } from './logger.js';
 
 type McpResponse = {
   content: { type: "text"; text: string }[];
@@ -21,9 +22,15 @@ export class ToolFactory {
     executor: (args: any) => Promise<McpResponse>
   ): void {
     this.server.tool(name, description, schema, async (args: unknown): Promise<McpResponse> => {
+      // Log tool start with arguments
+      let argStr = '';
+      try { argStr = JSON.stringify(args); } catch { argStr = String(args); }
+      log('info', `tool:start ${name} args=${argStr}`);
+
       const connectionCheck = await this.connection.checkConnectionAndReconnect();
 
       if (!connectionCheck.connected) {
+        log('warn', `tool:blocked ${name} reason=${connectionCheck.message}`);
         return {
           content: [{ type: "text", text: connectionCheck.message! }],
           isError: true
@@ -31,8 +38,17 @@ export class ToolFactory {
       }
 
       try {
-        return await executor(args);
+        const result = await executor(args);
+        const status = result.isError ? 'error' : 'ok';
+        const text = Array.isArray(result.content) && result.content[0]?.type === 'text'
+          ? String((result.content[0] as { text?: string }).text || '')
+          : '';
+        const compact = text.replace(/\s+/g, ' ').slice(0, 200);
+        log('info', `tool:done ${name} status=${status} text="${compact}"`);
+        return result;
       } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        log('error', `tool:error ${name} message=${msg}`);
         return this.createErrorResponse(error as Error);
       }
     });
