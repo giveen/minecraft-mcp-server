@@ -1,0 +1,125 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run place-relative tests",
+			"type": "shell",
+			"command": "npx ava tests/place-relative.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run mine-area tests",
+			"type": "shell",
+			"command": "npx ava tests/mine-area.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run mine-area tests with verbose output",
+			"type": "shell",
+			"command": "npx ava tests/mine-area.test.ts --verbose",
+			"group": "test"
+		},
+		{
+			"label": "Run mine-area tests after fix",
+			"type": "shell",
+			"command": "npx ava tests/mine-area.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run mine-area tests after grid fix",
+			"type": "shell",
+			"command": "npx ava tests/mine-area.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run mine-area tests after axis fix",
+			"type": "shell",
+			"command": "npx ava tests/mine-area.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run mine-tunnel tests",
+			"type": "shell",
+			"command": "npx ava tests/mine-tunnel.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run get-facing-direction tests",
+			"type": "shell",
+			"command": "npx ava tests/get-facing-direction.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run get-facing-direction tests after fix",
+			"type": "shell",
+			"command": "npx ava tests/get-facing-direction.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run get-facing-direction tests after test fix",
+			"type": "shell",
+			"command": "npx ava tests/get-facing-direction.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run stop tool tests",
+			"type": "shell",
+			"command": "npx ava tests/stop.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run teleport-to-entity tests",
+			"type": "shell",
+			"command": "npx ava tests/teleport-to-entity.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run teleport-to-position tests",
+			"type": "shell",
+			"command": "npx ava tests/teleport-to-position.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run build-line tests",
+			"type": "shell",
+			"command": "npx ava tests/build-line.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run build-line tests",
+			"type": "shell",
+			"command": "npx ava tests/build-line.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run build-line tests",
+			"type": "shell",
+			"command": "npx ava tests/build-line.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run build-line tests",
+			"type": "shell",
+			"command": "npx ava tests/build-line.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run build-line tests",
+			"type": "shell",
+			"command": "npx ava tests/build-line.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run build-line tests",
+			"type": "shell",
+			"command": "npx ava tests/build-line.test.ts",
+			"group": "test"
+		},
+		{
+			"label": "Run build-floor tests",
+			"type": "shell",
+			"command": "npx ava tests/build-floor.test.ts",
+			"group": "test"
+		}
+	]
+}

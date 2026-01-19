@@ -1,4 +1,11 @@
-#!/usr/bin/env node
+import { registerBuildLineTool } from './tools/build-line.js';
+import { registerTeleportToPositionTool } from './tools/teleport-to-position.js';
+import { registerTeleportToEntityTool } from './tools/teleport-to-entity.js';
+import { registerStopTool } from './tools/stop.js';
+import { registerGetFacingDirectionTool } from './tools/get-facing-direction.js';
+import { registerMineTunnelTool } from './tools/mine-tunnel.js';
+import { registerBuildFloorTool } from "./tools/build-floor.js";
+import { registerBuildBoxTool } from "./tools/build-box.js";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -15,6 +22,13 @@ import { registerEntityTools } from './tools/entity-tools.js';
 import { registerChatTools } from './tools/chat-tools.js';
 import { registerFlightTools } from './tools/flight-tools.js';
 import { registerGameStateTools } from './tools/gamestate-tools.js';
+
+import { registerMineRelativeTool } from './tools/mine-relative.js';
+import { registerMoveRelativeTool } from './tools/move-relative.js';
+import { registerGoToPlayerTool } from './tools/go-to-player.js';
+import { registerFollowPlayerTool } from './tools/follow-player.js';
+import { registerPlaceRelativeTool } from './tools/place-relative.js';
+import { registerMineAreaTool } from './tools/mine-area.js';
 import { registerCraftingTools } from './tools/crafting-tools.js';
 
 process.on('unhandledRejection', (reason) => {
@@ -62,7 +76,21 @@ async function main() {
   registerChatTools(factory, getBot, messageStore);
   registerFlightTools(factory, getBot);
   registerGameStateTools(factory, getBot);
+  registerMineRelativeTool(factory, getBot);
+  registerMoveRelativeTool(factory, getBot);
+  registerGoToPlayerTool(factory, getBot);
+  registerFollowPlayerTool(factory, getBot);
+  registerPlaceRelativeTool(factory, getBot);
   registerCraftingTools(factory, getBot);
+  registerMineAreaTool(factory, getBot);
+  registerMineTunnelTool(factory, getBot);
+  registerGetFacingDirectionTool(factory, getBot);
+  registerStopTool(factory);
+  registerTeleportToEntityTool(factory, getBot);
+  registerTeleportToPositionTool(factory, getBot);
+  registerBuildLineTool(factory, getBot);
+  registerBuildFloorTool(factory, getBot);
+  registerBuildBoxTool(factory, getBot);
 
   process.stdin.on('end', () => {
     connection.cleanup();

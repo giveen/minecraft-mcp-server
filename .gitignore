@@ -1,3 +1,5 @@
+# Ignore test files
+tests/
 # Dist folder
 dist/
 
