@@ -9,12 +9,15 @@ const buildFloorSchema = z.object({
   faceDirection: z.enum(["up", "down", "north", "south", "east", "west"]).optional(),
 });
 
+import { log } from "../logger.js";
+
 export function registerBuildFloorTool(factory: any, getBot: () => any) {
   factory.registerTool(
     "build-floor",
     "Builds a flat floor of blocks with the given width and depth, relative to the bot's facing direction.",
     buildFloorSchema,
     async ({ width, depth, blockType, faceDirection }: { width: number; depth: number; blockType: string; faceDirection?: string }) => {
+      log('info', `[build-floor] START args: ${JSON.stringify({ width, depth, blockType, faceDirection })}`);
       const bot = getBot();
       const pos = bot.entity.position;
       const yaw = bot.entity.yaw;
@@ -29,10 +32,12 @@ export function registerBuildFloorTool(factory: any, getBot: () => any) {
       // Use find-item tool
       const findItem = factory.server.tools?.find?.((t: any) => t.name === "find-item");
       if (!findItem || typeof findItem.executor !== "function") {
+        log('error', '[build-floor] find-item tool is not available');
         return factory.createErrorResponse("find-item tool is not available.");
       }
       const found = await findItem.executor({ nameOrType: blockType });
       if (found.isError || !found.content[0]?.text?.includes("Found")) {
+        log('error', `[build-floor] Block ${blockType} not found in inventory.`);
         return factory.createErrorResponse(`Block ${blockType} not found in inventory.`);
       }
       // Use equip-item tool

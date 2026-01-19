@@ -10,31 +10,40 @@ const buildBoxSchema = z.object({
   faceDirection: z.enum(["up", "down", "north", "south", "east", "west"]).optional(),
 });
 
+import { log } from "../logger.js";
+
 export function registerBuildBoxTool(factory: any, getBot: () => any) {
   factory.registerTool(
     "build-box",
     "Builds a rectangular box (floor, walls, ceiling) at the bot's position and facing.",
     buildBoxSchema,
     async ({ width, height, depth, blockType, faceDirection }: { width: number; height: number; depth: number; blockType: string; faceDirection?: string }) => {
+      log('info', `[build-box] START args: ${JSON.stringify({ width, height, depth, blockType, faceDirection })}`);
       const bot = getBot();
       const pos = bot.entity.position;
       const yaw = bot.entity.yaw;
       // Use find-item tool
       const findItem = factory.server.tools?.find?.((t: any) => t.name === "find-item");
       if (!findItem || typeof findItem.executor !== "function") {
+        log('error', '[build-box] find-item tool is not available');
         return factory.createErrorResponse("find-item tool is not available.");
       }
       const found = await findItem.executor({ nameOrType: blockType });
       if (found.isError || !found.content[0]?.text?.includes("Found")) {
+        log('error', `[build-box] Block ${blockType} not found in inventory.`);
         return factory.createErrorResponse(`Block ${blockType} not found in inventory.`);
       }
       // Use equip-item tool
       const equipItem = factory.server.tools?.find?.((t: any) => t.name === "equip-item");
       if (!equipItem || typeof equipItem.executor !== "function") {
+        log('error', '[build-box] equip-item tool is not available');
         return factory.createErrorResponse("equip-item tool is not available.");
       }
       const equipRes = await equipItem.executor({ itemName: blockType, destination: "hand" });
-      if (equipRes.isError) return equipRes;
+      if (equipRes.isError) {
+        log('error', `[build-box] equip-item failed: ${JSON.stringify(equipRes)}`);
+        return equipRes;
+      }
       // Use place-block tool
       const placeBlock = factory.server.tools?.find?.((t: any) => t.name === "place-block");
       if (!placeBlock || typeof placeBlock.executor !== "function") {

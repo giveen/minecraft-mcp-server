@@ -40,12 +40,15 @@ function computeOffsets(direction: string, yaw: number): { x: number; y: number;
   }
 }
 
+import { log } from "../logger.js";
+
 export function registerBuildLineTool(factory: any, getBot: () => any) {
   factory.registerTool(
     "build-line",
-    "Places a line of blocks in a specified direction and length, relative to the bot’s position and facing.",
+    "Places a line of blocks in a specified direction and length, relative to the bots position and facing.",
     buildLineSchema,
     async ({ direction, length, blockType, faceDirection }: { direction: string; length: number; blockType: string; faceDirection?: string }) => {
+      log('info', `[build-line] START args: ${JSON.stringify({ direction, length, blockType, faceDirection })}`);
       const bot = getBot();
       const pos = bot.entity.position;
       const yaw = bot.entity.yaw;
